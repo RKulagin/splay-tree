@@ -28,6 +28,11 @@ TEST(BST, BasicInsert) {
 
 TEST(BST, Insert) {
   BinarySearchTree<int, int> tree;
+  std::stringstream stream;
+
+  stream << tree;
+  EXPECT_EQ(stream.str(), "");
+
   tree.insert(1, 10);
   tree.insert(2, 12);
   tree.insert(5, 14);
@@ -41,9 +46,8 @@ TEST(BST, Insert) {
   EXPECT_EQ(tree.at(0), 20);
   EXPECT_EQ(tree.at(-10), 16);
 
-
-  std::stringstream stream;
   stream << tree;
-  EXPECT_EQ(stream.str(), "[1 10]\n[-10 16 1] [2 12 1]\n_ [-5 18 -10] _ [5 14 2]\n_ _ _ [0 20 -5] _ _ _ _\n");
-
+  EXPECT_EQ(stream.str(),
+            "[1 10]\n[-10 16 1] [2 12 1]\n_ [-5 18 -10] _ [5 14 2]\n_ _ _ [0 "
+            "20 -5] _ _ _ _\n");
 }
