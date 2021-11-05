@@ -102,7 +102,8 @@ class BinarySearchTree {
     return current;
   }
 
-  static inline bool has_non_empty_children(std::shared_ptr<Node> vertex) {
+  /// Checks if vertex is a leaf
+  static inline bool is_leaf(std::shared_ptr<Node> vertex) {
     return vertex->left != nullptr || vertex->right != nullptr;
   }
 
@@ -132,7 +133,7 @@ std::ostream& operator<<(std::ostream& out,
   level.push_back(tree.root->right);
   out << "[" << tree.root->key << " " << tree.root->value << "]\n";
 
-  bool inserted = tree.has_non_empty_children(tree.root);
+  bool inserted = tree.is_leaf(tree.root);
   while (inserted) {
     inserted = false;
     for (auto it = level.begin(); it != level.end(); ++it) {
@@ -140,7 +141,7 @@ std::ostream& operator<<(std::ostream& out,
         out << " ";
       }
       if (*it != nullptr) {
-        inserted |= tree.has_non_empty_children(*it);
+        inserted |= tree.is_leaf(*it);
         out << "[" << (*it)->key << " " << (*it)->value << " "
             << (*it)->parent.lock()->key << "]";
         next_level.push_back((*it)->left);
