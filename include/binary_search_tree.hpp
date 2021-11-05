@@ -4,6 +4,8 @@
 #define INCLUDE_BINARY_SEARCH_TREE_HPP_
 
 #include <functional>
+#include <iostream>
+#include <list>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -100,8 +102,60 @@ class BinarySearchTree {
     return current;
   }
 
+  inline bool has_non_empty_children(std::shared_ptr<Node> vertex) {
+    return vertex->left != nullptr || vertex->right != nullptr;
+  }
+
   std::shared_ptr<Node> root;
   Cmp cmp = Cmp();
+
+  template <class Key_, class Value_, class Cmp_>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  BinarySearchTree<Key_, Value_, Cmp_> tree);
 };
+
+template <class Key, class Value, class Cmp = std::less<Key>>
+std::ostream& operator<<(std::ostream& out,
+                         BinarySearchTree<Key, Value, Cmp> tree) {
+  using layer_type = std::list<
+      std::shared_ptr<typename BinarySearchTree<Key, Value, Cmp>::Node>>;
+
+  layer_type level;
+  layer_type next_level;
+
+  // Print tree root
+
+  if (tree.root == nullptr) {
+    return out;
+  }
+  level.push_back(tree.root->left);
+  level.push_back(tree.root->right);
+  out << "[" << tree.root->key << " " << tree.root->value << "]\n";
+
+  bool inserted = tree.has_non_empty_children(tree.root);
+  while (inserted) {
+    inserted = false;
+    for (auto it = level.begin(); it != level.end(); ++it) {
+      if (it != level.begin()) {
+        out << " ";
+      }
+      if (*it != nullptr) {
+        inserted |= tree.has_non_empty_children(*it);
+        out << "[" << (*it)->key << " " << (*it)->value << " "
+            << (*it)->parent.lock()->key << "]";
+        next_level.push_back((*it)->left);
+        next_level.push_back((*it)->right);
+      } else {
+        out << "_";
+        next_level.push_back(nullptr);
+        next_level.push_back(nullptr);
+      }
+    }
+    out << "\n";
+    level = std::move(next_level);
+    next_level.clear();
+  }
+  return out;
+}
 
 #endif  // INCLUDE_BINARY_SEARCH_TREE_HPP_
