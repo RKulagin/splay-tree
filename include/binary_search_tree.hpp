@@ -3,9 +3,9 @@
 #ifndef INCLUDE_BINARY_SEARCH_TREE_HPP_
 #define INCLUDE_BINARY_SEARCH_TREE_HPP_
 
-#include <stdexcept>
 #include <functional>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 template <class Key, class Value, class Cmp = std::less<Key>>
