@@ -102,7 +102,7 @@ class BinarySearchTree {
     return current;
   }
 
-  inline bool has_non_empty_children(std::shared_ptr<Node> vertex) {
+  static inline bool has_non_empty_children(std::shared_ptr<Node> vertex) {
     return vertex->left != nullptr || vertex->right != nullptr;
   }
 
