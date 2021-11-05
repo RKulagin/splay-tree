@@ -54,7 +54,6 @@ class BinarySearchTree {
     throw std::out_of_range("No node found for the given key.");
   }
 
-
  private:
   struct Node {
     key_type key = {};

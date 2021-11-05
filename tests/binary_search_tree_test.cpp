@@ -14,4 +14,8 @@ TEST(BST, BasicInsert) {
   EXPECT_NE(tree.at(3), "2");
   EXPECT_THROW(tree.at(2), std::out_of_range);
   EXPECT_THROW(tree.insert(3, "2"), std::runtime_error);
+  const auto& similar_tree = tree;
+  EXPECT_EQ(tree.at(1), similar_tree.at(1));
+  EXPECT_THROW(similar_tree.at(100), std::out_of_range);
+
 }
