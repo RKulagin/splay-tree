@@ -115,6 +115,9 @@ class BinarySearchTree {
       std::ostream& out, const BinarySearchTree<Key_, Value_, Cmp_>& tree);
 };
 
+/// Outputs the tree layer by layer to the output stream
+/// \param out output stream
+/// \param tree tree to print
 template <class Key, class Value, class Cmp = std::less<Key>>
 std::ostream& operator<<(std::ostream& out,
                          const BinarySearchTree<Key, Value, Cmp>& tree) {
@@ -133,15 +136,19 @@ std::ostream& operator<<(std::ostream& out,
   level.push_back(tree.root->right);
   out << "[" << tree.root->key << " " << tree.root->value << "]\n";
 
-  bool inserted = tree.is_leaf(tree.root);
-  while (inserted) {
-    inserted = false;
+  // Print non-root layer
+
+  bool has_non_leaf_node =      // If all nodes of a layer are leaves, printing
+      tree.is_leaf(tree.root);  // should be stopped after this layer
+
+  while (has_non_leaf_node) {
+    has_non_leaf_node = false;
     for (auto it = level.begin(); it != level.end(); ++it) {
       if (it != level.begin()) {
         out << " ";
       }
       if (*it != nullptr) {
-        inserted |= tree.is_leaf(*it);
+        has_non_leaf_node |= tree.is_leaf(*it);
         out << "[" << (*it)->key << " " << (*it)->value << " "
             << (*it)->parent.lock()->key << "]";
         next_level.push_back((*it)->left);
