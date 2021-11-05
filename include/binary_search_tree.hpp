@@ -110,13 +110,13 @@ class BinarySearchTree {
   Cmp cmp = Cmp();
 
   template <class Key_, class Value_, class Cmp_>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  BinarySearchTree<Key_, Value_, Cmp_> tree);
+  friend std::ostream& operator<<(
+      std::ostream& out, const BinarySearchTree<Key_, Value_, Cmp_>& tree);
 };
 
 template <class Key, class Value, class Cmp = std::less<Key>>
 std::ostream& operator<<(std::ostream& out,
-                         BinarySearchTree<Key, Value, Cmp> tree) {
+                         const BinarySearchTree<Key, Value, Cmp>& tree) {
   using layer_type = std::list<
       std::shared_ptr<typename BinarySearchTree<Key, Value, Cmp>::Node>>;
 
