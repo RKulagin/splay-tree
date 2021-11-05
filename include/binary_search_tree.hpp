@@ -3,6 +3,7 @@
 #ifndef INCLUDE_BINARY_SEARCH_TREE_HPP_
 #define INCLUDE_BINARY_SEARCH_TREE_HPP_
 
+#include <exception>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -49,6 +50,8 @@ class BinarySearchTree {
     }
     throw std::out_of_range("No node found for the given key.");
   }
+
+  value_type& operator[](key_type&& key) {}
 
  private:
   struct Node {
