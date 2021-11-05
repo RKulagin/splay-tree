@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include <example.hpp>
+#include <binary_search_tree.hpp>
 
 auto example() -> void {
   throw std::runtime_error("not implemented");
