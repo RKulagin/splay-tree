@@ -74,7 +74,7 @@ class BinarySearchTree {
 
   /// Searches for a Node with the given key or one that would become the parent
   /// of the Node if the node with the given key were added now
-  std::shared_ptr<Node> find(key_type key) {
+  std::shared_ptr<Node> find(key_type key) const {
     auto current = root;
     while (current != nullptr) {
       if (key == current->key) {
