@@ -14,8 +14,6 @@ class BinarySearchTree {
   using key_type = Key;
   using value_type = Value;
 
-  // TODO(RKulagin): rule of five
-
   /// Adds a tree item with the given key and value
   /// \throws an exception if an object with the given key
   /// already exists in the tree
