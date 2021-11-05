@@ -16,9 +16,9 @@ class BinarySearchTree {
 
   // TODO(RKulagin): rule of five
 
-  ///
-  /// \param key
-  /// \param value
+  /// Adds a tree item with the given key and value
+  /// \throws an exception if an object with the given key
+  /// already exists in the tree
   void insert(key_type&& key, value_type&& value) {
     auto place = find(key);
     if (place == nullptr) {
@@ -38,6 +38,9 @@ class BinarySearchTree {
     }
   }
 
+  /// Access element
+  /// \throws out_of_range if n is out of bounds
+  /// \return lvalue reference to the value stored under given key
   value_type& at(key_type&& key) {
     auto search_result = find(key);
     if (key == search_result->key) {
@@ -46,6 +49,9 @@ class BinarySearchTree {
     throw std::out_of_range("No node found for the given key.");
   }
 
+  /// Access element without any changes to container
+  /// \throws out_of_range if n is out of bounds
+  /// \return const lvalue reference to the value stored under given key
   const value_type& at(key_type&& key) const {
     auto search_result = find(key);
     if (key == search_result->key) {
