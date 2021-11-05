@@ -3,7 +3,7 @@
 #ifndef INCLUDE_BINARY_SEARCH_TREE_HPP_
 #define INCLUDE_BINARY_SEARCH_TREE_HPP_
 
-#include <exception>
+#include <stdexcept>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -16,6 +16,9 @@ class BinarySearchTree {
 
   // TODO(RKulagin): rule of five
 
+  ///
+  /// \param key
+  /// \param value
   void insert(key_type&& key, value_type&& value) {
     auto place = find(key);
     if (place == nullptr) {
@@ -51,7 +54,6 @@ class BinarySearchTree {
     throw std::out_of_range("No node found for the given key.");
   }
 
-  value_type& operator[](key_type&& key) {}
 
  private:
   struct Node {
