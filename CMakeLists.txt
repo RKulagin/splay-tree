@@ -34,7 +34,7 @@ find_package(GTest CONFIG REQUIRED)
 add_library(${PROJECT_NAME} STATIC
         # enum your files and delete this comment
         ${CMAKE_CURRENT_SOURCE_DIR}/sources/binary_search_tree.cpp
-        include/splay_tree.h)
+        include/splay_tree.hpp)
 
 add_executable(demo
         ${CMAKE_CURRENT_SOURCE_DIR}/demo/main.cpp
