@@ -16,51 +16,6 @@ class BinarySearchTree {
   using key_type = Key;
   using value_type = Value;
 
-  /// Adds a tree item with the given key and value
-  /// \throws an exception if an object with the given key
-  /// already exists in the tree
-  void insert(key_type&& key, value_type&& value) {
-    auto place = find(key);
-    if (place == nullptr) {
-      root = std::make_shared<Node>(std::move(key), std::move(value));
-      return;
-    }
-    if (key == place->key) {
-      throw std::runtime_error(
-          "Binary Search Tree can't handle two nodes with similar key");
-    }
-    if (cmp(key, place->key)) {
-      place->left =
-          std::make_shared<Node>(std::move(key), std::move(value), place);
-    } else {
-      place->right =
-          std::make_shared<Node>(std::move(key), std::move(value), place);
-    }
-  }
-
-  /// Access element
-  /// \throws out_of_range if n is out of bounds
-  /// \return lvalue reference to the value stored under given key
-  value_type& at(key_type&& key) {
-    auto search_result = find(key);
-    if (key == search_result->key) {
-      return search_result->value;
-    }
-    throw std::out_of_range("No node found for the given key.");
-  }
-
-  /// Access element without any changes to container
-  /// \throws out_of_range if n is out of bounds
-  /// \return const lvalue reference to the value stored under given key
-  const value_type& at(key_type&& key) const {
-    auto search_result = find(key);
-    if (key == search_result->key) {
-      return search_result->value;
-    }
-    throw std::out_of_range("No node found for the given key.");
-  }
-
- private:
   struct Node {
     key_type key = {};
     value_type value = {};
@@ -76,10 +31,59 @@ class BinarySearchTree {
           left(std::move(l)),
           right(std::move(r)) {}
   };
+  using node_ptr = std::shared_ptr<Node>;
+
+  virtual ~BinarySearchTree() = default;
+
+  /// Adds a tree item with the given key and value
+  /// \throws an exception if an object with the given key
+  /// already exists in the tree
+  virtual node_ptr insert(key_type&& key, value_type&& value) {
+    auto place = find(key);
+    if (place == nullptr) {
+      root = std::make_shared<Node>(std::move(key), std::move(value));
+      return root;
+    }
+    if (key == place->key) {
+      throw std::runtime_error(
+          "Binary Search Tree can't handle two nodes with similar key");
+    }
+    if (cmp(key, place->key)) {
+      place->left =
+          std::make_shared<Node>(std::move(key), std::move(value), place);
+      return place->left;
+    } else {
+      place->right =
+          std::make_shared<Node>(std::move(key), std::move(value), place);
+      return place->right;
+    }
+  }
+
+  /// Access element
+  /// \throws out_of_range if n is out of bounds
+  /// \return lvalue reference to the value stored under given key
+  virtual value_type& at(key_type&& key) {
+    auto search_result = find(key);
+    if (key == search_result->key) {
+      return search_result->value;
+    }
+    throw std::out_of_range("No node found for the given key.");
+  }
+
+  /// Access element without any changes to container
+  /// \throws out_of_range if n is out of bounds
+  /// \return const lvalue reference to the value stored under given key
+  virtual const value_type& at(key_type&& key) const {
+    auto search_result = find(key);
+    if (key == search_result->key) {
+      return search_result->value;
+    }
+    throw std::out_of_range("No node found for the given key.");
+  }
 
   /// Searches for a Node with the given key or one that would become the parent
   /// of the Node if the node with the given key were added now
-  std::shared_ptr<Node> find(key_type key) const {
+  node_ptr find(key_type key) const {
     auto current = root;
     while (current != nullptr) {
       if (key == current->key) {
@@ -102,12 +106,71 @@ class BinarySearchTree {
     return current;
   }
 
+  node_ptr top() { return root; }
+
+ protected:
+  inline bool is_left_child(node_ptr node) const {
+    return node->parent.lock()->left == node;
+  }
+  inline bool is_right_child(node_ptr node) const {
+    return node->parent.lock()->right == node;
+  }
+
+  void rotate_right(node_ptr node) {
+    node_ptr middle = node->right;
+    node_ptr parent = node->parent.lock();
+    if (parent->parent.lock() != nullptr) {
+      if (is_left_child(parent)) {
+        parent->parent.lock()->left = node;
+      } else {
+        parent->parent.lock()->right = node;
+      }
+    } else {
+      root = node;
+    }
+    node->parent = parent->parent;
+
+    node->right = parent;
+    parent->parent = node;
+    parent->left = middle;
+    if (middle != nullptr) {
+      middle->parent = parent;
+    }
+  }
+  void rotate_left(node_ptr node) {
+    node_ptr middle = node->left;
+    node_ptr parent = node->parent.lock();
+
+    if (parent->parent.lock() != nullptr) {
+      if (is_left_child(parent)) {
+        parent->parent.lock()->left = node;
+      } else {
+        parent->parent.lock()->right = node;
+      }
+    } else {
+      root = node;
+    }
+    node->parent = parent->parent;
+
+    node->left = parent;
+    parent->parent = node;
+    parent->right = middle;
+    if (middle != nullptr) {
+      middle->parent = parent;
+    }
+  }
+
+  inline bool is_root(node_ptr node) const {
+    return node->parent.lock() == nullptr;
+  }
+
+ private:
   /// Checks if vertex is a leaf
   static inline bool is_leaf(std::shared_ptr<Node> vertex) {
     return vertex->left != nullptr || vertex->right != nullptr;
   }
 
-  std::shared_ptr<Node> root;
+  node_ptr root;
   Cmp cmp = Cmp();
 
   template <class Key_, class Value_, class Cmp_>
