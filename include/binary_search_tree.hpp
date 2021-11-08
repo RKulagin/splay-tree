@@ -236,6 +236,24 @@ class BinarySearchTree {
     return node->left != nullptr || node->right != nullptr;
   }
 
+  void generate_empty(std::ostream& out, uint64_t size) {
+    uint64_t value = 1;
+    for (size_t i = 0; value <= size; ++i) {
+      if (archive.size() <= i) {
+        archive.push_back(archive.back() + " " + archive.back());
+      }
+      if (value & size) {
+        out << archive[i];
+        value <<= 1u;
+        if (value <= size) {
+          out << " ";
+        }
+      } else {
+        value <<= 1u;
+      }
+    }
+  }
+
   node_ptr _find(const key_type& key) const {
     auto current = root;
     while (current != nullptr) {
@@ -260,34 +278,36 @@ class BinarySearchTree {
   }
   Cmp cmp = Cmp();
 
+  std::vector<std::string> archive = {"_", "_ _", "_ _ _ _"};
+
   template <class Key_, class Value_, class Cmp_>
-  friend std::ostream& operator<<(
-      std::ostream& out, const BinarySearchTree<Key_, Value_, Cmp_>& tree);
+  friend std::ostream& operator<<(std::ostream& out,
+                                  BinarySearchTree<Key_, Value_, Cmp_>& tree);
 };
 
 /// Outputs the tree layer by layer to the output stream
 /// \param out output stream
 /// \param tree tree to print
 template <class Key, class Value, class Cmp = std::less<Key>>
-std::ostream& operator<<(std::ostream& out,
-                         const BinarySearchTree<Key, Value, Cmp>& tree) {
-  using layer_type = std::list<
-      std::shared_ptr<typename BinarySearchTree<Key, Value, Cmp>::Node>>;
-
-  layer_type level;
-  layer_type next_level;
-
+std::ostream& operator<<(
+    std::ostream& out,
+    BinarySearchTree<Key, Value, Cmp>& tree) {  // TODO: make const
   // Print tree root
 
   if (tree.root == nullptr) {
     out << "_";
     return out;
   }
-  level.push_back(tree.root->left);
-  level.push_back(tree.root->right);
   out << "[" << tree.root->key << " " << tree.root->value << "]";
 
   // Print non-root layer
+  using layer_type = std::vector<
+      std::shared_ptr<typename BinarySearchTree<Key, Value, Cmp>::Node>>;
+
+  layer_type level;
+  layer_type next_level;
+  level.push_back(tree.root->left);
+  level.push_back(tree.root->right);
 
   bool has_non_leaf_node =      // If all nodes of a layer are leaves, printing
       tree.is_leaf(tree.root);  // should be stopped after this layer
@@ -295,21 +315,31 @@ std::ostream& operator<<(std::ostream& out,
   while (has_non_leaf_node) {
     out << "\n";
     has_non_leaf_node = false;
+    size_t buffer_size = 0;
     for (auto it = level.begin(); it != level.end(); ++it) {
-      if (it != level.begin()) {
-        out << " ";
-      }
       if (*it != nullptr) {
+        if (it - buffer_size != level.begin()) {
+          out << " ";
+        }
+        if (buffer_size) {
+          tree.generate_empty(out, buffer_size);
+          out << " ";
+        }
+        buffer_size = 0;
         has_non_leaf_node |= tree.is_leaf(*it);
         out << "[" << (*it)->key << " " << (*it)->value << " "
             << (*it)->parent.lock()->key << "]";
         next_level.push_back((*it)->left);
         next_level.push_back((*it)->right);
       } else {
-        out << "_";
+        ++buffer_size;
         next_level.push_back(nullptr);
         next_level.push_back(nullptr);
       }
+    }
+    if (buffer_size) {
+      out << " ";
+      tree.generate_empty(out, buffer_size);
     }
     level = std::move(next_level);
     next_level.clear();

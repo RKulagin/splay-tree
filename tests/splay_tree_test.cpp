@@ -82,24 +82,14 @@ TEST(Splay, HugeInsert) {
             "[3 13 5] [8 64 5] _ _\n"
             "_ [4 14 3] [6 18 8] [11 121 8] _ _ _ _\n"
             "_ _ _ _ _ [7 15 6] [9 11 11] _ _ _ _ _ _ _ _ _");
-  std::cout << tree << std::endl;
   tree.erase(8);
-  std::cout << tree << std::endl;
-
   tree.erase(4);
-  std::cout << tree << std::endl;
   tree.erase(7);
-  std::cout << tree << std::endl;
   tree.erase(9);
-  std::cout << tree << std::endl << std::endl;
   tree.erase(3);
-  std::cout << tree << std::endl;
   tree.erase(5);
-  std::cout << tree << std::endl;
   tree.erase(88);
-  std::cout << tree << std::endl;
   tree.erase(11);
-  std::cout << tree << std::endl;
   tree.erase(6);
   stream.str("");
   stream << tree;
@@ -140,7 +130,7 @@ TEST(Splay, SomeTest) {
   stream.str("");
 
   tree.insert(3, 13);
-  std::cout << tree << std::endl;
+
   stream << tree;
   EXPECT_EQ(stream.str(),
             "[3 13]\n"
@@ -156,14 +146,10 @@ TEST(Splay, SomeTest) {
             "[3 13 5] [8 10 5]\n"
             "_ [4 14 3] [7 15 8] [9 11 8]");
   stream.str("");
-
-  //  tree.insert(88, 1);
-  //  tree.insert(11, 2);
-  //  tree.insert(6, 18);
-  //  tree.insert(4, 14);
-  //  tree.insert(11, 121);
-  //  tree.insert(6, 36);
-  //  tree.insert(8, 64);
-  //  tree.insert(5, 25);
-  //  tree.insert(88, 100500);
 }
+
+//TEST(Generate, Func){
+//  std::stringstream stream;
+//  generate_empty(stream, 17);
+//  EXPECT_EQ(stream.str(), "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _");
+//}
