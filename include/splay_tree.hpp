@@ -4,7 +4,8 @@
 #define INCLUDE_SPLAY_TREE_HPP_
 
 #include <binary_search_tree.hpp>
-
+#include <functional>
+#include <utility>
 template <typename Key, typename Value, typename Cmp = std::less<Key>>
 class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
  public:

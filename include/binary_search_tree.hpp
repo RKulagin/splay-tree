@@ -8,7 +8,9 @@
 #include <list>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
 template <class Key, class Value, class Cmp = std::less<Key>>
 class BinarySearchTree {
@@ -291,7 +293,7 @@ class BinarySearchTree {
 template <class Key, class Value, class Cmp = std::less<Key>>
 std::ostream& operator<<(
     std::ostream& out,
-    BinarySearchTree<Key, Value, Cmp>& tree) {  // TODO: make const
+    BinarySearchTree<Key, Value, Cmp>& tree) {  // TODO(rkulagin): make const
   // Print tree root
 
   if (tree.root == nullptr) {
