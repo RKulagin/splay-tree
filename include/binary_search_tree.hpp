@@ -83,6 +83,9 @@ class BinarySearchTree {
   /// of the Node if the node with the given key were added now
   virtual node_ptr find(const key_type& key) { return _find(key); }
 
+  /// \brief Erases an element from a tree according to the provided key
+  /// \param key Key of element to be erased
+  /// \throw std::out_of_range If no such element with \a key in tree
   virtual value_type erase(const key_type& key) {
     node_ptr node = find(key);
     auto erased_value = std::move(node->value);

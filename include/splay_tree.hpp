@@ -47,6 +47,9 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
     throw std::out_of_range("No node found for the given key.");
   }
 
+  /// \brief Erases an element from a splay tree according to the provided key
+  /// \param key Key of element to be erased
+  /// \throw std::out_of_range If no such element with \a key in tree
   value_type erase(const key_type& key) override {
     node_ptr node = bst::find(key);
     splay(node);
