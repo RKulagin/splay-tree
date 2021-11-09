@@ -266,7 +266,7 @@ class BinarySearchTree {
     return current;
   }
 
-  void erase_leaf(node_ptr node){
+  void erase_leaf(node_ptr node) {
     if (is_root(node)) {
       root = nullptr;
     } else {
@@ -281,8 +281,8 @@ class BinarySearchTree {
   Cmp cmp = Cmp();
 
   template <class Key_, class Value_, class Cmp_>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  BinarySearchTree<Key_, Value_, Cmp_>& tree);
+  friend std::ostream& operator<<(
+      std::ostream& out, const BinarySearchTree<Key_, Value_, Cmp_>& tree);
 };
 
 /// Outputs sequence of empty nodes in tree layers using cache
@@ -296,10 +296,8 @@ void print_empty_sequence(std::ostream& out, uint64_t size,
 /// \param out Output stream.
 /// \param tree Tree to print.
 template <class Key, class Value, class Cmp = std::less<Key>>
-std::ostream& operator<<(
-    std::ostream& out,
-    BinarySearchTree<Key, Value, Cmp>& tree) {  // TODO(rkulagin): make const
-
+std::ostream& operator<<(std::ostream& out,
+                         const BinarySearchTree<Key, Value, Cmp>& tree) {
   // For optimization reasons we store strings of "_ _ ... _" to print tree
   // effectively. The content of the vector by default allows you not to waste
   // time on frequent generations of small strings, while caching allows you not
