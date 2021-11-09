@@ -41,6 +41,7 @@ class BinarySearchTree {
           left(std::move(l)),
           right(std::move(r)) {}
   };
+
   using node_ptr = std::shared_ptr<Node>;
 
   virtual ~BinarySearchTree() = default;
@@ -50,23 +51,10 @@ class BinarySearchTree {
   /// already exists in the tree
   virtual std::pair<node_ptr, bool> insert(const key_type& key,
                                            const value_type& value) {
-    auto place = _find(key);
-    if (place == nullptr) {
-      root = std::make_shared<Node>(std::move(key), std::move(value));
-      return {root, true};
-    }
-    if (key == place->key) {
-      return {place, false};
-    }
-    if (cmp(key, place->key)) {
-      place->left =
-          std::make_shared<Node>(std::move(key), std::move(value), place);
-      return {place->left, true};
-    } else {
-      place->right =
-          std::make_shared<Node>(std::move(key), std::move(value), place);
-      return {place->right, true};
-    }
+    return _insert(key, value);
+  }
+  virtual std::pair<node_ptr, bool> insert(key_type&& key, value_type&& value) {
+    return _insert(std::move(key), std::move(value));
   }
 
   /// Access element
@@ -84,7 +72,7 @@ class BinarySearchTree {
   /// \throws out_of_range if n is out of bounds
   /// \return const lvalue reference to the value stored under given key
   virtual const value_type& at(const key_type& key) const {
-    auto search_result = find(key);
+    auto search_result = _find(key);
     if (key == search_result->key) {
       return search_result->value;
     }
@@ -93,8 +81,6 @@ class BinarySearchTree {
 
   /// Searches for a Node with the given key or one that would become the parent
   /// of the Node if the node with the given key were added now
-  virtual node_ptr find(const key_type& key) const { return _find(key); }
-
   virtual node_ptr find(const key_type& key) { return _find(key); }
 
   virtual value_type erase(const key_type& key) {
@@ -102,18 +88,8 @@ class BinarySearchTree {
     auto erased_value = std::move(node->value);
     while (node != nullptr) {
       if (is_leaf(node)) {
-        if (is_root(node)) {
-          root = nullptr;
-          return erased_value;
-        } else {
-          if (is_left_child(node)) {
-            node->parent.lock()->left = nullptr;
-            return erased_value;
-          } else {
-            node->parent.lock()->right = nullptr;
-            return erased_value;
-          }
-        }
+        erase_leaf(node);
+        return erased_value;
       } else if (node->left != nullptr && node->right == nullptr) {
         if (is_root(node)) {
           root = node->left;
@@ -149,7 +125,7 @@ class BinarySearchTree {
     }
     return erased_value;
   }
-
+  /// Returns pointer to node with minimum key
   virtual node_ptr min() {
     node_ptr node = root;
     while (node != nullptr && node->left != nullptr) {
@@ -157,7 +133,7 @@ class BinarySearchTree {
     }
     return node;
   }
-
+  /// Returns pointer to node with maximum key.
   virtual node_ptr max() {
     node_ptr node = root;
     while (node != nullptr && node->right != nullptr) {
@@ -167,6 +143,8 @@ class BinarySearchTree {
   }
 
  protected:
+  // Operations with tree
+
   inline bool is_left_child(node_ptr node) const {
     return node->parent.lock()->left == node;
   }
@@ -177,6 +155,7 @@ class BinarySearchTree {
   void rotate_right(node_ptr node) {
     node_ptr middle = node->right;
     node_ptr parent = node->parent.lock();
+
     if (parent->parent.lock() != nullptr) {
       if (is_left_child(parent)) {
         parent->parent.lock()->left = node;
@@ -195,6 +174,7 @@ class BinarySearchTree {
       middle->parent = parent;
     }
   }
+
   void rotate_left(node_ptr node) {
     node_ptr middle = node->left;
     node_ptr parent = node->parent.lock();
@@ -232,27 +212,31 @@ class BinarySearchTree {
 
   node_ptr root;
 
- private:
   /// Checks if node is a leaf
   static inline bool is_leaf(node_ptr node) {
     return node->left != nullptr || node->right != nullptr;
   }
 
-  void generate_empty(std::ostream& out, uint64_t size) {
-    uint64_t value = 1;
-    for (size_t i = 0; value <= size; ++i) {
-      if (archive.size() <= i) {
-        archive.push_back(archive.back() + " " + archive.back());
-      }
-      if (value & size) {
-        out << archive[i];
-        value <<= 1u;
-        if (value <= size) {
-          out << " ";
-        }
-      } else {
-        value <<= 1u;
-      }
+ private:
+  template <typename K, typename V>
+  std::pair<node_ptr, bool> _insert(K&& key, V&& value) {
+    auto place = _find(key);
+    if (place == nullptr) {
+      root =
+          std::make_shared<Node>(std::forward<K>(key), std::forward<V>(value));
+      return {root, true};
+    }
+    if (key == place->key) {
+      return {place, false};
+    }
+    if (cmp(key, place->key)) {
+      place->left = std::make_shared<Node>(std::forward<K>(key),
+                                           std::forward<V>(value), place);
+      return {place->left, true};
+    } else {
+      place->right = std::make_shared<Node>(std::forward<K>(key),
+                                            std::forward<V>(value), place);
+      return {place->right, true};
     }
   }
 
@@ -278,22 +262,47 @@ class BinarySearchTree {
     }
     return current;
   }
-  Cmp cmp = Cmp();
 
-  std::vector<std::string> archive = {"_", "_ _", "_ _ _ _"};
+  void erase_leaf(node_ptr node){
+    if (is_root(node)) {
+      root = nullptr;
+    } else {
+      if (is_left_child(node)) {
+        node->parent.lock()->left = nullptr;
+      } else {
+        node->parent.lock()->right = nullptr;
+      }
+    }
+  }
+
+  Cmp cmp = Cmp();
 
   template <class Key_, class Value_, class Cmp_>
   friend std::ostream& operator<<(std::ostream& out,
                                   BinarySearchTree<Key_, Value_, Cmp_>& tree);
 };
 
+/// Outputs sequence of empty nodes in tree layers using cache
+/// \param out Output stream.
+/// \param size Length of sequence to output.
+/// \param cache Vector of cached empty sequences
+void print_empty_sequence(std::ostream& out, uint64_t size,
+                          std::vector<std::string>& cache);
+
 /// Outputs the tree layer by layer to the output stream
-/// \param out output stream
-/// \param tree tree to print
+/// \param out Output stream.
+/// \param tree Tree to print.
 template <class Key, class Value, class Cmp = std::less<Key>>
 std::ostream& operator<<(
     std::ostream& out,
     BinarySearchTree<Key, Value, Cmp>& tree) {  // TODO(rkulagin): make const
+
+  // For optimization reasons we store strings of "_ _ ... _" to print tree
+  // effectively. The content of the vector by default allows you not to waste
+  // time on frequent generations of small strings, while caching allows you not
+  // to waste time in the case of long empty series.
+  std::vector<std::string> cache = {"_", "_ _", "_ _ _ _"};
+
   // Print tree root
 
   if (tree.root == nullptr) {
@@ -324,7 +333,7 @@ std::ostream& operator<<(
           out << " ";
         }
         if (buffer_size) {
-          tree.generate_empty(out, buffer_size);
+          print_empty_sequence(out, buffer_size, cache);
           out << " ";
         }
         buffer_size = 0;
@@ -341,7 +350,7 @@ std::ostream& operator<<(
     }
     if (buffer_size) {
       out << " ";
-      tree.generate_empty(out, buffer_size);
+      print_empty_sequence(out, buffer_size, cache);
     }
     level = std::move(next_level);
     next_level.clear();

@@ -147,9 +147,3 @@ TEST(Splay, SomeTest) {
             "_ [4 14 3] [7 15 8] [9 11 8]");
   stream.str("");
 }
-
-//TEST(Generate, Func){
-//  std::stringstream stream;
-//  generate_empty(stream, 17);
-//  EXPECT_EQ(stream.str(), "_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _");
-//}

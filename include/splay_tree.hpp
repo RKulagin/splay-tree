@@ -13,13 +13,32 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
   using value_type = Value;
   using bst = BinarySearchTree<Key, Value, Cmp>;
 
+  /// \brief Add item in a three
+  /// \throws an exception if an object with
+  /// the given key already exists in the tree
+  ///
+  /// Adds a tree item with the given key and value as normal binary search tree
+  /// and splay inserted node in the end.
   std::pair<typename bst::node_ptr, bool> insert(const Key& key,
                                                  const Value& value) override {
-    auto [node, status] = bst::insert(key, value);
-    splay(node);
-    return {node, status};
+    return _insert(key, value);
+  }
+  std::pair<typename bst::node_ptr, bool> insert(Key&& key,
+                                                 Value&& value) override {
+    return _insert(key, value);
   }
 
+  /// \brief Access to tree data.
+  /// \param key The key for which data should be retrieved.
+  /// \throw std::out_of_range If no such data is present.
+  /// \return A reference to the data whose key is equivalent to \a key, if
+  /// such a data is present in the %heap
+  ///
+  /// Provides access to the data contained in tree under key.
+  /// The key is checked that heap contains data with such key.
+  /// The splay function is called for the found vertex or the vertex closest
+  /// to the found one.
+  /// The function throws out_of_range if the check fails.
   value_type& at(const key_type& key) override {
     auto node = find(key);
     if (node != nullptr && key == bst::root->key) {
@@ -30,45 +49,33 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
 
   value_type erase(const key_type& key) override {
     node_ptr node = bst::find(key);
-
     splay(node);
+
     if (node == nullptr || node->key != key) {
       throw std::out_of_range("No such key found.");
     }
+
     value_type erased_value = std::move(bst::root->value);
-
     node_ptr right = bst::root->right;
-
-    bst::root->right = nullptr;
-
-    node_ptr inorder_predecessor = bst::find_inorder_predecessor(bst::root);
-
     node_ptr left = bst::root->left;
+    bst::root->right = nullptr;
+    node_ptr inorder_predecessor = bst::find_inorder_predecessor(bst::root);
     if (right == nullptr) {
       bst::root = bst::root->left;
       if (left != nullptr) {
         bst::root->parent = node_ptr();
       }
-
       return erased_value;
     }
-    if (left != nullptr) {
+    if (left == nullptr) {
+      right->parent = node_ptr();
+      bst::root = right;
+    } else {
       left->parent = node_ptr();
       bst::root = left;
-      //      node_ptr inorder_predecessor =
-      //      bst::find_inorder_predecessor(bst::root);
       splay(inorder_predecessor);
-
       bst::root->right = right;
-
-      if (right != nullptr) {
-        right->parent = bst::root;
-      }
-    } else {
-      if (right != nullptr) {
-        right->parent = node_ptr();
-      }
-      bst::root = right;
+      right->parent = bst::root;
     }
     return erased_value;
   }
@@ -79,12 +86,14 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
     return node;
   }
 
+  /// Retrieve node with minimum key (find, splay and return it)
   typename bst::node_ptr min() override {
     node_ptr node = bst::min();
     splay(node);
     return node;
   }
 
+  /// Retrieve node with maximum key (find, splay and return it)
   typename bst::node_ptr max() override {
     node_ptr node = bst::max();
     splay(node);
@@ -94,6 +103,7 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
  private:
   using node_ptr = typename bst::node_ptr;
 
+  /// Operation to move node to the root of the tree.
   void splay(node_ptr node) {
     while (node != nullptr && !bst::is_root(node)) {
       if (bst::is_root(node->parent.lock())) {
@@ -106,10 +116,9 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
       } else {
         zigzag(node);
       }
-      if (node->parent.lock() == nullptr) {
+      if (bst::is_root(node)) {
         return;
       }
-      //      node = node->parent.lock()->parent.lock();
     }
   }
 
@@ -126,16 +135,11 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
   void zigzig(node_ptr node) {
     if (bst::is_left_child(node) && bst::is_left_child(node->parent.lock())) {
       bst::rotate_right(node->parent.lock());
-      //      std::cout << *this << std::endl;
       bst::rotate_right(node);
-      //      std::cout << *this << std::endl;
-
     } else if (bst::is_right_child(node) &&
                bst::is_right_child(node->parent.lock())) {
       bst::rotate_left(node->parent.lock());
       bst::rotate_left(node);
-    } else {
-      throw std::logic_error("Wrong call of zig-zig function");
     }
   }
 
@@ -150,6 +154,14 @@ class SplayTree : public BinarySearchTree<Key, Value, Cmp> {
       bst::rotate_right(node);
       bst::rotate_left(node);
     }
+  }
+
+  template <typename K, typename V>
+  std::pair<typename bst::node_ptr, bool> _insert(K&& key, V&& value) {
+    auto [node, status] =
+        bst::insert(std::forward<K>(key), std::forward<V>(value));
+    splay(node);
+    return {node, status};
   }
 };
 #endif  // INCLUDE_SPLAY_TREE_HPP_
